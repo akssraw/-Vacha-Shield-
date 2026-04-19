@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vacha Shield Mobile</string>
+    <string name="title_main">Live Call AI Voice Detection</string>
+    <string name="subtitle_main">Monitors call-adjacent audio in real time and sends strict detection checks to your Vacha backend.</string>
+    <string name="backend_label">Backend URL</string>
+    <string name="backend_hint">http://10.0.2.2:5000</string>
+    <string name="auto_start_label">Auto start monitor when a call starts</string>
+    <string name="start_monitor">Start Live Monitor</string>
+    <string name="status_idle">Status: Idle</string>
+    <string name="result_placeholder">Last result will appear here.</string>
+    <string name="notes_text">Note: On Android, full two-way call audio capture depends on OEM and call mode restrictions. Keep speaker mode enabled for stronger detection.</string>
+</resources>

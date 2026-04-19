@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vacha-Shield 2.0 | AI Voice Deepfake & Scam Detection</title>
+    <meta name="description" content="Real-time AI-powered voice deepfake detection and scam call monitoring engine. Protect yourself from voice clones and fraud.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- Background Effects -->
+<div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+</div>
+<div class="grid-overlay"></div>
+
+<div class="app-wrapper">
+
+    <!-- ===== TOP NAVIGATION ===== -->
+    <nav class="top-nav">
+        <a href="/" class="nav-logo" aria-label="Vacha-Shield Home">
+            <div class="shield-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="url(#navGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00e5ff"/>
+                            <stop offset="100%" stop-color="#8b5cf6"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+            </div>
+            <h1 class="gradient-text">Vacha-Shield</h1>
+        </a>
+        <div class="nav-status">
+            <div id="model-status" class="status-pill">
+                <span class="dot"></span>
+                <span>Model Ready</span>
+            </div>
+            <div id="device-badge" class="nav-device-badge">CPU</div>
+        </div>
+    </nav>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+        <h1 class="hero-title">Vacha-Shield 2.0</h1>
+        <p class="hero-subtitle">AI-Powered Voice Deepfake & Scam Detection</p>
+        <p class="hero-tagline">Real-time neural network analysis to detect AI-cloned voices, synthetic speech artifacts, and fraudulent call language patterns.</p>
+    </section>
+
+    <!-- ===== LOADER OVERLAY ===== -->
+    <div id="loader-overlay" class="loader-overlay">
+        <div class="loader-ring"></div>
+        <div class="loader-text">Analyzing Audio Signatures</div>
+        <div class="loader-sub">Decoding Mel-Spectrogram &amp; Processing CNN Arrays...</div>
+    </div>
+
+    <!-- ===== VIEW: UPLOAD (Default) ===== -->
+    <section id="view-upload" class="view-section active container">
+        <div class="panel-grid">
+
+            <!-- Left Panel: Upload & Record -->
+            <div class="glass-card">
+                <div class="section-header">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <h2>Upload & Analyze</h2>
+                    <span class="header-badge">File Analysis</span>
+                </div>
+
+                <div id="drop-zone" class="drop-zone">
+                    <div class="drop-zone-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                    </div>
+                    <h3>Drop Audio File Here</h3>
+                    <p>Drag & drop your audio file or click to browse</p>
+                    <div class="file-types">
+                        <span class="file-type-badge">.wav</span>
+                        <span class="file-type-badge">.mp3</span>
+                        <span class="file-type-badge">.webm</span>
+                        <span class="file-type-badge">.flac</span>
+                    </div>
+                    <button class="btn btn-outline" id="browse-btn">Browse Files</button>
+                    <input type="file" id="audio-input" accept=".wav,.mp3,.webm,.flac" hidden>
+                </div>
+
+                <!-- Selected File Info -->
+                <div id="file-info" class="file-info hidden">
+                    <div class="file-info-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18V5l12-2v13"/>
+                            <circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+                        </svg>
+                    </div>
+                    <div class="file-info-details">
+                        <div class="file-info-name" id="file-name">audio.wav</div>
+                        <div class="file-info-meta" id="file-meta">Ready for analysis</div>
+                    </div>
+                    <button class="btn btn-primary" id="analyze-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Analyze
+                    </button>
+                </div>
+
+                <!-- Record Section -->
+                <div class="record-section">
+                    <h3>Or Record Live Audio</h3>
+                    <p>Use your microphone to capture and analyze audio</p>
+                    <div class="flex-center gap-sm mt-1">
+                        <button class="btn btn-record" id="record-btn" title="Record Audio">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
+                        </button>
+                    </div>
+                    <p id="recording-status" class="hidden" style="color: var(--danger); margin-top: 0.8rem; font-weight: 600; font-size: 0.85rem;">
+                        ● Recording... Click to stop
+                    </p>
+                </div>
+
+                <!-- Demo Mode -->
+                <label class="demo-toggle">
+                    <input type="checkbox" id="demo-mode-toggle">
+                    Force AI Clone Detection (Demo Mode)
+                </label>
+            </div>
+
+            <!-- Right Panel: Live Monitor & Profile -->
+            <div class="glass-card">
+                <div class="section-header">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                    </div>
+                    <h2>Live Call Monitor</h2>
+                    <span class="header-badge">Real-Time</span>
+                </div>
+
+                <div class="glass-card-inner text-center" style="padding: 2rem;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; opacity: 0.6;">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                        Monitor incoming calls in real-time with continuous AI voice analysis and scam language detection.
+                    </p>
+                    <button class="btn btn-primary btn-lg" id="start-monitor-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        Start Live Monitor
+                    </button>
+                </div>
+
+                <!-- Analysis Profile Selector -->
+                <div class="profile-selector">
+                    <label>Analysis Profile</label>
+                    <div class="profile-tabs" id="profile-tabs">
+                        <button class="profile-tab" data-profile="conservative">Conservative</button>
+                        <button class="profile-tab" data-profile="balanced">Balanced</button>
+                        <button class="profile-tab active" data-profile="strict">Strict</button>
+                        <button class="profile-tab" data-profile="forensic">Forensic</button>
+                    </div>
+                </div>
+
+                <!-- Tech Info -->
+                <div class="detail-grid mt-2">
+                    <div class="detail-item">
+                        <div class="detail-label">Model</div>
+                        <div class="detail-value">AudioCNN v2</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Features</div>
+                        <div class="detail-value">PCEN + Delta</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Inference</div>
+                        <div class="detail-value">Mel-Spectrogram</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Languages</div>
+                        <div class="detail-value">EN / HI / Hinglish</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== VIEW: RESULTS ===== -->
+    <section id="view-results" class="view-section container">
+
+        <!-- Alert Banners -->
+        <div id="alert-danger" class="alert-banner danger">
+            <h2>⚠ AI VOICE CLONE DETECTED</h2>
+            <p>Neural networks have identified high-probability synthetic speech artifacts.</p>
+        </div>
+
+        <div id="alert-safe" class="alert-banner safe">
+            <h2>✓ VERIFIED HUMAN VOICE</h2>
+            <p>No synthetic speech artifacts detected in the audio signal.</p>
+        </div>
+
+        <div id="alert-warning" class="alert-banner warning">
+            <h2>⚡ BORDERLINE DETECTION</h2>
+            <p>Voice stayed just below the alert threshold — treat with caution.</p>
+        </div>
+
+        <div id="alert-fraud" class="alert-banner danger">
+            <h2>🚨 FRAUDULENT LANGUAGE DETECTED</h2>
+            <p>Scam keyword patterns identified in the audio transcript.</p>
+        </div>
+
+        <div class="results-grid">
+            <!-- Left: Metrics -->
+            <div class="glass-card">
+                <div class="section-header">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+                        </svg>
+                    </div>
+                    <h2>Deep Learning Analysis</h2>
+                </div>
+
+                <!-- Threat Gauge -->
+                <div class="gauge-container">
+                    <svg class="gauge-svg" viewBox="0 0 200 120">
+                        <path class="gauge-bg" d="M 20 100 A 80 80 0 0 1 180 100"/>
+                        <path id="gauge-fill" class="gauge-fill" d="M 20 100 A 80 80 0 0 1 180 100" stroke="var(--safe)" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+                        <text id="gauge-value" class="gauge-value" x="100" y="88">0%</text>
+                        <text class="gauge-label" x="100" y="108">Synthetic Probability</text>
+                    </svg>
+                </div>
+
+                <!-- Progress Bars -->
+                <div class="metric-item">
+                    <div class="metric-header">
+                        <span class="metric-label">Human Classification</span>
+                        <span class="metric-value safe" id="human-score">0.00%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill safe-fill" id="human-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="metric-item">
+                    <div class="metric-header">
+                        <span class="metric-label">Synthetic / Deepfake</span>
+                        <span class="metric-value danger" id="synth-score">0.00%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill danger-fill" id="synth-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="metric-item">
+                    <div class="metric-header">
+                        <span class="metric-label">Model Confidence</span>
+                        <span class="metric-value neutral" id="model-score">0.00%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill accent-fill" id="model-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="metric-item">
+                    <div class="metric-header">
+                        <span class="metric-label">Artifact Probability</span>
+                        <span class="metric-value neutral" id="artifact-score">0.00%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill warning-fill" id="artifact-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Verdict -->
+                <div class="verdict-box safe" id="verdict-box">
+                    <div class="verdict-icon safe" id="verdict-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </div>
+                    <div class="verdict-text">
+                        <h4 id="verdict-title">VERIFIED HUMAN</h4>
+                        <p id="verdict-summary">No synthetic artifacts detected.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Spectrogram & Details -->
+            <div class="glass-card">
+                <div class="section-header">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="3" y1="9" x2="21" y2="9"/>
+                            <line x1="9" y1="21" x2="9" y2="9"/>
+                        </svg>
+                    </div>
+                    <h2>Acoustic Features</h2>
+                </div>
+
+                <div class="spectrogram-wrapper" id="spectrogram-wrapper">
+                    <div class="spectrogram-placeholder" id="spectrogram-placeholder">
+                        Mel-Spectrogram will appear here
+                    </div>
+                    <img id="spectrogram-img" src="" alt="Mel-Spectrogram" style="display: none;">
+                </div>
+
+                <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.5rem;">
+                    *Mel-Spectrograms mapped to 16kHz feeding the PyTorch AudioCNN framework.
+                </p>
+
+                <!-- Scam Keywords -->
+                <div class="separator"></div>
+                <div class="section-header" style="margin-bottom: 0.8rem;">
+                    <div class="icon-box" style="background: rgba(255,75,75,0.08); border-color: rgba(255,75,75,0.2);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    </div>
+                    <h2>Scam Language Analysis</h2>
+                </div>
+                <div id="fraud-score-box" class="metric-item">
+                    <div class="metric-header">
+                        <span class="metric-label">Fraud Language Risk</span>
+                        <span class="metric-value neutral" id="fraud-score">0.00%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill danger-fill" id="fraud-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="keyword-pills" id="keyword-pills">
+                    <span class="keyword-pill safe">No keywords detected</span>
+                </div>
+
+                <!-- Transcript Preview -->
+                <div class="separator"></div>
+                <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.4rem; font-weight: 600;">Transcript Preview</div>
+                <div class="transcript-feed" id="transcript-preview" style="min-height: 40px;">
+                    <span style="color: var(--text-muted);">No transcript available</span>
+                </div>
+
+                <!-- Decision Details -->
+                <div class="separator"></div>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Profile</div>
+                        <div class="detail-value" id="detail-profile">strict</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Threshold</div>
+                        <div class="detail-value" id="detail-threshold">0.50</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Chunks</div>
+                        <div class="detail-value" id="detail-chunks">0</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Decision</div>
+                        <div class="detail-value" id="detail-mode">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="feedback-section" id="feedback-section">
+            <h3>Help Train Vacha-Shield</h3>
+            <p>Was this prediction correct? Label this audio to improve the model.</p>
+            <div class="feedback-buttons" id="feedback-buttons">
+                <button class="btn btn-safe" id="btn-feedback-human">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    It was Human
+                </button>
+                <button class="btn btn-danger" id="btn-feedback-ai">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    It was AI
+                </button>
+            </div>
+            <p class="feedback-thanks" id="feedback-thanks">✓ Thank you! Data saved for the next training epoch.</p>
+        </div>
+
+        <!-- Actions -->
+        <div class="results-actions">
+            <button class="btn btn-ghost btn-block" id="reset-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                Scan Another File
+            </button>
+        </div>
+    </section>
+
+    <!-- ===== VIEW: LIVE MONITOR ===== -->
+    <section id="view-monitor" class="view-section container">
+        <div class="glass-card">
+            <div class="monitor-header">
+                <div class="monitor-title-group">
+                    <h2>Live Call Monitor</h2>
+                    <div class="live-badge" id="live-badge">
+                        <span class="live-dot"></span>
+                        <span>LIVE</span>
+                    </div>
+                </div>
+                <button class="btn btn-danger" id="stop-monitor-btn">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+                    End Monitor
+                </button>
+            </div>
+
+            <!-- Waveform -->
+            <div class="waveform-container">
+                <span class="waveform-label">Audio Waveform</span>
+                <canvas id="waveform-canvas"></canvas>
+            </div>
+
+            <!-- Monitor Cards -->
+            <div class="monitor-cards">
+                <!-- Voice Clone Card -->
+                <div class="monitor-card" id="monitor-voice-card">
+                    <div class="monitor-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        <span>Voice Clone Detection</span>
+                    </div>
+                    <div class="monitor-card-value" id="monitor-voice-status" style="color: var(--safe);">SAFE</div>
+                    <div class="monitor-card-sub" id="monitor-voice-sub">Synthetic: 0%</div>
+                    <div class="progress-track mt-1">
+                        <div class="progress-fill safe-fill" id="monitor-voice-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Scam Language Card -->
+                <div class="monitor-card" id="monitor-scam-card">
+                    <div class="monitor-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--safe)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <span>Scam Language</span>
+                    </div>
+                    <div class="monitor-card-value" id="monitor-scam-status" style="color: var(--safe);">NO THREATS</div>
+                    <div class="monitor-card-sub" id="monitor-scam-sub">Fraud Score: 0.0</div>
+                    <div class="keyword-pills mt-1" id="monitor-keywords"></div>
+                </div>
+
+                <!-- Transcript Card -->
+                <div class="monitor-card">
+                    <div class="monitor-card-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <span>Live Transcript</span>
+                    </div>
+                    <div class="transcript-feed" id="monitor-transcript">
+                        <span style="color: var(--text-muted); font-size: 0.75rem;">Waiting for speech...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Threat Ring -->
+            <div class="threat-ring-container">
+                <svg class="threat-ring-svg" viewBox="0 0 160 160">
+                    <circle class="threat-ring-bg" cx="80" cy="80" r="65"/>
+                    <circle class="threat-ring-fill" id="threat-ring-fill" cx="80" cy="80" r="65"
+                        stroke="var(--safe)"
+                        stroke-dasharray="408.4"
+                        stroke-dashoffset="408.4"/>
+                    <text id="threat-ring-value" class="threat-ring-value" x="80" y="76">0%</text>
+                    <text class="threat-ring-label" x="80" y="96">Threat Level</text>
+                </svg>
+            </div>
+
+            <!-- Monitor Stats -->
+            <div class="monitor-stats">
+                <div class="monitor-stat">
+                    <div class="monitor-stat-label">Sample Rate</div>
+                    <div class="monitor-stat-value" id="stat-sample-rate">16kHz</div>
+                </div>
+                <div class="monitor-stat">
+                    <div class="monitor-stat-label">Buffer</div>
+                    <div class="monitor-stat-value" id="stat-buffer">0.0s</div>
+                </div>
+                <div class="monitor-stat">
+                    <div class="monitor-stat-label">Latency</div>
+                    <div class="monitor-stat-value" id="stat-latency">—</div>
+                </div>
+                <div class="monitor-stat">
+                    <div class="monitor-stat-label">Processing</div>
+                    <div class="monitor-stat-value" id="stat-processing">—</div>
+                </div>
+                <div class="monitor-stat">
+                    <div class="monitor-stat-label">Verdict</div>
+                    <div class="monitor-stat-value" id="stat-verdict">—</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== BOTTOM BAR ===== -->
+    <footer class="bottom-bar">
+        <div class="bottom-bar-item">
+            Model: <span>AudioCNN v2</span>
+        </div>
+        <div class="bottom-bar-item">
+            Features: <span>PCEN + Delta Pipeline</span>
+        </div>
+        <div class="bottom-bar-item">
+            Device: <span id="footer-device">CPU</span>
+        </div>
+        <div class="bottom-bar-item">
+            © 2026 Vacha-Shield
+        </div>
+    </footer>
+
+</div>
+
+<!-- Main Script -->
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

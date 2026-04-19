@@ -1,0 +1,127 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Meta tags for PWA feel -->
+    <meta name="theme-color" content="#0a0e17">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Vacha-Shield Mobile</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}">
+</head>
+
+<body>
+
+    <!-- Top Status Bar Mock -->
+    <div class="top-nav">
+        <div class="app-logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00f2fe" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            </svg>
+            <h2>Vacha-Shield</h2>
+        </div>
+        <div class="status-indicator" id="nav-status">OFFLINE</div>
+    </div>
+
+    <!-- Main Mobile Content Area -->
+    <main class="mobile-container">
+
+        <!-- Phase 12: Standby OS Background View -->
+        <div id="standby-view" class="view-panel">
+            <div class="header-section">
+                <div class="shield-icon">SHIELD</div>
+                <h1 class="main-title">Shield Active</h1>
+                <p class="subtitle">Running securely in background.<br>Waiting for OS Call Intent...</p>
+            </div>
+
+            <div class="privacy-badge">
+                <span class="privacy-dot"></span>
+                <span>Microphone Hardware Disconnected</span>
+            </div>
+
+            <div class="simulation-actions">
+                <p class="sim-label">HACKATHON SIMULATOR</p>
+                <button id="sim-call-btn" class="sim-btn cellular">
+                    <span class="btn-icon">CALL</span> Simulate Incoming Call
+                </button>
+            </div>
+        </div>
+
+        <!-- Active Radar View (Hidden until Call starts) -->
+        <div id="active-view" class="view-panel hidden">
+            <div class="header-section">
+                <h1 class="main-title">Call Monitoring</h1>
+                <p class="subtitle" id="call-type-subtitle">Secure Live Phone Calls</p>
+            </div>
+
+            <div class="radar-container active">
+                <!-- Pulsing Animation Elements -->
+                <div class="pulse-ring delay-1"></div>
+                <div class="pulse-ring delay-2"></div>
+                <div class="pulse-ring delay-3"></div>
+
+                <!-- Central Action Button (Now acts as End Call) -->
+                <button id="record-btn" class="record-btn ripple">
+                    <span class="btn-text" style="color:#ff4d4d;">END<br>CALL</span>
+                    <span class="btn-subtext">Tap to disconnect</span>
+                </button>
+            </div>
+
+            <!-- Real-Time Audio Visualizer -->
+            <div class="visualizer-container" id="viz-container">
+                <canvas id="audio-visualizer" width="300" height="80"></canvas>
+            </div>
+
+            <!-- Live Score Feedback Dashboard -->
+            <div id="live-dashboard" class="dashboard-panel">
+                <h3 class="dashboard-title">LIVE FEED</h3>
+
+                <div class="metric">
+                    <div class="metric-labels">
+                        <span>Authentic Human</span>
+                        <span id="metric-human" class="safe-text">0.0%</span>
+                    </div>
+                    <div class="metric-bar-bg">
+                        <div id="bar-human" class="metric-fill safe-bg" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-labels">
+                        <span>Synthetic Audio</span>
+                        <span id="metric-synth" class="danger-text">0.0%</span>
+                    </div>
+                    <div class="metric-bar-bg">
+                        <div id="bar-synth" class="metric-fill danger-bg" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <p id="analysis-status" class="status-feed pulse-text">Listening for speech segments...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Deepfake Full Screen Overlay (Triggered on Alert) -->
+    <div id="alert-overlay" class="fullscreen-alert hidden">
+        <div class="alert-content">
+            <div class="alert-icon">ALERT</div>
+            <h1 class="alert-massive-title">DEEPFAKE DETECTED</h1>
+            <p class="alert-warning">Do NOT follow instructions.<br>Do NOT send funds.</p>
+            <p class="prob-text">AI Certainty: <span id="overlay-prob">84.2%</span></p>
+            <button id="dismiss-btn" class="dismiss-btn">OVERRIDE</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='mobile.js') }}"></script>
+</body>
+
+</html>
