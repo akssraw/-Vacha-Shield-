@@ -1,0 +1,5 @@
+﻿node_modules/
+dist/
+build_output.log
+src.zip
+.env
